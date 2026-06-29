@@ -1,6 +1,7 @@
 package network
 
 import (
+	"audio-recorder/config"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -22,10 +23,10 @@ type LoginResponse struct {
 
 // Login performs a login request to the authentication API.
 // Returns the access token and token type if successful, or an error.
-func Login(baseURL, username, password string) (*LoginResponse, error) {
+func Login(cfg config.Config) (*LoginResponse, error) {
 	loginReq := LoginRequest{
-		Username: username,
-		Password: password,
+		Username: cfg.Server.Usernaem,
+		Password: cfg.Server.Password,
 	}
 
 	reqBody, err := json.Marshal(loginReq)
@@ -33,7 +34,7 @@ func Login(baseURL, username, password string) (*LoginResponse, error) {
 		return nil, fmt.Errorf("failed to marshal login request: %w", err)
 	}
 
-	endpoint := fmt.Sprintf("%s/api/login", baseURL)
+	endpoint := fmt.Sprintf("%s/api/login", cfg.Server.URL)
 
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(reqBody))
 	if err != nil {
@@ -41,7 +42,7 @@ func Login(baseURL, username, password string) (*LoginResponse, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: cfg.Server.Timeout}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("login request failed: %w", err)

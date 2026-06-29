@@ -21,20 +21,14 @@ type UploadCallback func(success bool, response string)
 
 // Uploader handles uploading audio segments to transcription service
 type Uploader struct {
-	cfg          config.Config
-	serverURL    string
-	timeout      int
-	workerCount  int
-	maxRetries   int
-	initialDelay int
-	maxDelay     int
+	cfg    config.Config
+	logger utils.Logger
 
 	jobs      chan *uploadJob
 	workers   []*worker
 	waitGroup sync.WaitGroup
 	running   bool
 	mu        sync.RWMutex
-	logger    utils.Logger
 }
 
 type uploadJob struct {
@@ -63,7 +57,7 @@ func (u *Uploader) Start() error {
 	}
 
 	// Authenticate with the server using the Login function.
-	loginResp, err := Login(u.cfg.Server.URL, u.cfg.Server.Usernaem, u.cfg.Server.Password)
+	loginResp, err := Login(u.cfg)
 	if err != nil {
 		u.logger.Error(fmt.Sprintf("Uploader failed to login: %v", err))
 		return err

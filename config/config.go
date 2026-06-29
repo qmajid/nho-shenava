@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -27,10 +28,10 @@ type AudioConfig struct {
 
 // ServerConfig holds server settings
 type ServerConfig struct {
-	URL      string `yaml:"url"`
-	Timeout  int    `yaml:"timeout"`
-	Usernaem string `yaml:"username"`
-	Password string `yaml:"password"`
+	URL      string        `yaml:"url"`
+	Timeout  time.Duration `yaml:"timeout"`
+	Usernaem string        `yaml:"username"`
+	Password string        `yaml:"password"`
 }
 
 // WorkersConfig holds worker settings
@@ -98,7 +99,7 @@ func (cfg *Config) initDefault() {
 	}
 	cfg.Server = ServerConfig{
 		URL:     "http://localhost:8080/transcribe",
-		Timeout: 30,
+		Timeout: time.Duration(30)*time.Second,
 	}
 	cfg.Workers = WorkersConfig{
 		Count:     2,

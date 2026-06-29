@@ -9,7 +9,7 @@ audio:
 # Transcription server settings
 server:
   url: https://api.hoomanai.ir
-  timeout: 30  # seconds
+  timeout: 30s
   username: user404
   password: User@404
 
