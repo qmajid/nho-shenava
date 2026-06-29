@@ -7,17 +7,16 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"time"
 
 	"audio-recorder/audio"
 )
 
 // VoiceUploader uploads captured voice from microphone to the offline server API.
-type VoiceUploader struct {
-	APIToken string
-	APIURL   string
-	Timeout  time.Duration
-}
+// type VoiceUploader struct {
+// 	APIToken string
+// 	APIURL   string
+// 	Timeout  time.Duration
+// }
 
 // UploadResult holds the response from the offline server.
 type UploadResult struct {
@@ -32,7 +31,7 @@ type UploadResult struct {
 
 // Upload uploads an AudioSegment to the offline server.
 // Returns the transcribed text or error.
-func (v *VoiceUploader) Upload(segment *audio.AudioSegment) (string, error) {
+func (v *Uploader) Upload(segment *audio.AudioSegment) (string, error) {
 	if segment == nil {
 		return "", fmt.Errorf("segment is nil")
 	}
@@ -47,7 +46,7 @@ func (v *VoiceUploader) Upload(segment *audio.AudioSegment) (string, error) {
 }
 
 // uploadData handles the actual multipart upload.
-func (v *VoiceUploader) uploadData(wavData []byte, sampleRate, channels int, duration float64) (string, error) {
+func (v *Uploader) uploadData(wavData []byte, sampleRate, channels int, duration float64) (string, error) {
 	var body bytes.Buffer
 	writer := multipart.NewWriter(&body)
 
@@ -76,17 +75,17 @@ func (v *VoiceUploader) uploadData(wavData []byte, sampleRate, channels int, dur
 	writer.Close()
 
 	// Create request
-	endpoint := fmt.Sprintf("%s/api/transcribe", v.APIURL)
+	endpoint := fmt.Sprintf("%s/api/transcribe", v.cfg.Server.URL)
 	req, err := http.NewRequest(http.MethodPost, endpoint, &body)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.Header.Set("Authorization", "Bearer "+v.APIToken)
+	req.Header.Set("Authorization", "Bearer "+"toke")
 
 	// Send request
-	client := http.Client{Timeout: v.Timeout}
+	client := http.Client{Timeout: v.cfg.Server.TranscribeTimeout}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("request failed: %w", err)
@@ -123,10 +122,10 @@ func (v *VoiceUploader) uploadData(wavData []byte, sampleRate, channels int, dur
 }
 
 // NewVoiceUploader creates a new VoiceUploader with the given config.
-func NewVoiceUploader(apiToken, apiURL string, timeout time.Duration) *VoiceUploader {
-	return &VoiceUploader{
-		APIToken: apiToken,
-		APIURL:   apiURL,
-		Timeout:  timeout,
-	}
-}
+// func NewVoiceUploader(apiToken, apiURL string, timeout time.Duration) *VoiceUploader {
+// 	return &VoiceUploader{
+// 		APIToken: apiToken,
+// 		APIURL:   apiURL,
+// 		Timeout:  timeout,
+// 	}
+// }

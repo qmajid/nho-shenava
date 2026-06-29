@@ -98,23 +98,23 @@ func (u *Uploader) Stop() {
 }
 
 // Upload queues an audio segment for upload
-func (u *Uploader) Upload(segment *audio.AudioSegment, callback UploadCallback) {
-	job := &uploadJob{
-		segment:  segment,
-		callback: callback,
-	}
+// func (u *Uploader) Upload(segment *audio.AudioSegment, callback UploadCallback) {
+// 	job := &uploadJob{
+// 		segment:  segment,
+// 		callback: callback,
+// 	}
 
-	select {
-	case u.jobs <- job:
-		// Job queued
-	default:
-		// Queue full, drop the job
-		u.logger.Warn("Upload queue full, dropping segment")
-		if callback != nil {
-			callback(false, "queue full")
-		}
-	}
-}
+// 	select {
+// 	case u.jobs <- job:
+// 		// Job queued
+// 	default:
+// 		// Queue full, drop the job
+// 		u.logger.Warn("Upload queue full, dropping segment")
+// 		if callback != nil {
+// 			callback(false, "queue full")
+// 		}
+// 	}
+// }
 
 // WaitForComplete waits for all pending uploads to complete
 func (u *Uploader) WaitForComplete() {

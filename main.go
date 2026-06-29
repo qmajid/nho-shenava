@@ -90,13 +90,13 @@ func main() {
 						seg := buffer.GetSegment()
 						if seg != nil {
 							logger.Info(fmt.Sprintf("Uploading segment: duration=%.2fs", seg.Duration()))
-							uploader.Upload(seg, func(success bool, resp string) {
-								if success {
-									logger.Info(fmt.Sprintf("Upload successful: %s", resp))
-								} else {
-									logger.Error(fmt.Sprintf("Upload failed: %s", resp))
-								}
-							})
+							if transcribe, err := uploader.Upload(seg); err != nil {
+								logger.Error(fmt.Sprintf("Upload failed: %v", err))
+							} else {
+								logger.Info("successful transcribe")
+								fmt.Printf("transcribe:\n%v\n", transcribe)
+							}
+
 							buffer.Reset()
 						}
 					}
@@ -142,36 +142,36 @@ func main() {
 	logger.Info("Performing graceful shutdown...")
 
 	// Flush remaining buffer
-	if !buffer.IsEmpty() {
-		seg := buffer.GetSegment()
-		if seg != nil && seg.Duration() > 1.0 {
-			logger.Info(fmt.Sprintf("Uploading final segment: duration=%.2fs", seg.Duration()))
-			uploader.Upload(seg, func(success bool, resp string) {
-				if success {
-					logger.Info(fmt.Sprintf("Final upload successful: %s", resp))
-				} else {
-					logger.Error(fmt.Sprintf("Final upload failed: %s", resp))
-				}
-			})
-		}
-	}
+	// if !buffer.IsEmpty() {
+	// 	seg := buffer.GetSegment()
+	// 	if seg != nil && seg.Duration() > 1.0 {
+	// 		logger.Info(fmt.Sprintf("Uploading final segment: duration=%.2fs", seg.Duration()))
+	// 		uploader.Upload(seg, func(success bool, resp string) {
+	// 			if success {
+	// 				logger.Info(fmt.Sprintf("Final upload successful: %s", resp))
+	// 			} else {
+	// 				logger.Error(fmt.Sprintf("Final upload failed: %s", resp))
+	// 			}
+	// 		})
+	// 	}
+	// }
 
 	// Wait for uploader to finish with timeout
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), time.Duration(cfg.Shutdown.Timeout)*time.Second)
-	defer shutdownCancel()
+	// shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), time.Duration(cfg.Shutdown.Timeout)*time.Second)
+	// defer shutdownCancel()
 
-	done := make(chan struct{})
-	go func() {
-		uploader.WaitForComplete()
-		close(done)
-	}()
+	// done := make(chan struct{})
+	// go func() {
+	// 	uploader.WaitForComplete()
+	// 	close(done)
+	// }()
 
-	select {
-	case <-done:
-		logger.Info("All uploads completed")
-	case <-shutdownCtx.Done():
-		logger.Warn("Shutdown timeout reached, some uploads may be incomplete")
-	}
+	// select {
+	// case <-done:
+	// 	logger.Info("All uploads completed")
+	// case <-shutdownCtx.Done():
+	// 	logger.Warn("Shutdown timeout reached, some uploads may be incomplete")
+	// }
 
 	logger.Info("Audio Recorder stopped")
 }
