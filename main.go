@@ -78,20 +78,30 @@ func main() {
 			return
 		}
 
-		// Check if we have a complete segment
-		if buffer.IsFull() {
-			seg := buffer.GetSegment()
-			if seg != nil {
-				logger.Info(fmt.Sprintf("Uploading segment: duration=%.2fs", seg.Duration()))
-				uploader.Upload(seg, func(success bool, resp string) {
-					if success {
-						logger.Info(fmt.Sprintf("Upload successful: %s", resp))
-					} else {
-						logger.Error(fmt.Sprintf("Upload failed: %s", resp))
+		// Send data every 10 seconds if buffer contains data
+		staticTickerOnce := false
+		var uploadTicker *time.Ticker
+		if !staticTickerOnce {
+			uploadTicker = time.NewTicker(10 * time.Second)
+			staticTickerOnce = true
+			go func() {
+				for range uploadTicker.C {
+					if !buffer.IsEmpty() {
+						seg := buffer.GetSegment()
+						if seg != nil {
+							logger.Info(fmt.Sprintf("Uploading segment: duration=%.2fs", seg.Duration()))
+							uploader.Upload(seg, func(success bool, resp string) {
+								if success {
+									logger.Info(fmt.Sprintf("Upload successful: %s", resp))
+								} else {
+									logger.Error(fmt.Sprintf("Upload failed: %s", resp))
+								}
+							})
+							buffer.Reset()
+						}
 					}
-				})
-			}
-			buffer.Reset()
+				}
+			}()
 		}
 	})
 
