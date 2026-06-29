@@ -10,6 +10,7 @@ audio:
 server:
   url: https://api.hoomanai.ir
   timeout: 30s
+  transcribe_timeout: 1m
   username: user404
   password: User@404
 

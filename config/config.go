@@ -28,10 +28,11 @@ type AudioConfig struct {
 
 // ServerConfig holds server settings
 type ServerConfig struct {
-	URL      string        `yaml:"url"`
-	Timeout  time.Duration `yaml:"timeout"`
-	Usernaem string        `yaml:"username"`
-	Password string        `yaml:"password"`
+	URL               string        `yaml:"url"`
+	Timeout           time.Duration `yaml:"timeout"`
+	Username          string        `yaml:"username"`
+	Password          string        `yaml:"password"`
+	TranscribeTimeout time.Duration `yaml:"transcribe_timeout"`
 }
 
 // WorkersConfig holds worker settings
@@ -99,7 +100,7 @@ func (cfg *Config) initDefault() {
 	}
 	cfg.Server = ServerConfig{
 		URL:     "http://localhost:8080/transcribe",
-		Timeout: time.Duration(30)*time.Second,
+		Timeout: time.Duration(30) * time.Second,
 	}
 	cfg.Workers = WorkersConfig{
 		Count:     2,

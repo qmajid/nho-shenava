@@ -25,7 +25,7 @@ type LoginResponse struct {
 // Returns the access token and token type if successful, or an error.
 func Login(cfg config.Config) (*LoginResponse, error) {
 	loginReq := LoginRequest{
-		Username: cfg.Server.Usernaem,
+		Username: cfg.Server.Username,
 		Password: cfg.Server.Password,
 	}
 

@@ -206,7 +206,10 @@ func (w *worker) upload(segment *audio.AudioSegment) (bool, string) {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	// Send request
-	resp, err := http.DefaultClient.Do(req)
+	client := http.Client{
+		Timeout: w.uploader.cfg.Server.TranscribeTimeout,
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return false, fmt.Sprintf("request failed: %v", err)
 	}
