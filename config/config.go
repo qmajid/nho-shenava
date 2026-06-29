@@ -21,10 +21,10 @@ type Config struct {
 
 // AudioConfig holds audio settings
 type AudioConfig struct {
-	SampleRate      int    `yaml:"sample_rate"`
-	Channels        int    `yaml:"channels"`
-	SegmentDuration int    `yaml:"segment_duration"`
-	TestFile        string `yaml:"test_file"`
+	SampleRate      int           `yaml:"sample_rate"`
+	Channels        int           `yaml:"channels"`
+	SegmentDuration time.Duration `yaml:"segment_duration"`
+	TestFile        string        `yaml:"test_file"`
 }
 
 // ServerConfig holds server settings
@@ -97,7 +97,7 @@ func (cfg *Config) initDefault() {
 	cfg.Audio = AudioConfig{
 		SampleRate:      16000,
 		Channels:        1,
-		SegmentDuration: 60,
+		SegmentDuration: time.Duration(60) * time.Second,
 	}
 	cfg.Server = ServerConfig{
 		URL:     "http://localhost:8080/transcribe",
@@ -128,7 +128,7 @@ func (cfg *Config) Validate() error {
 	if cfg.Audio.Channels <= 0 {
 		return errors.New("audio.channels must be positive")
 	}
-	if cfg.Audio.SegmentDuration < 10 || cfg.Audio.SegmentDuration > 600 {
+	if cfg.Audio.SegmentDuration < 1*time.Second || cfg.Audio.SegmentDuration > 1*time.Hour {
 		return errors.New("audio.segment_duration must be between 10 and 600 seconds")
 	}
 	if cfg.Server.URL == "" {

@@ -11,18 +11,18 @@ import (
 // AudioSegment represents a segment of audio data
 type AudioSegment struct {
 	data       []int16
-	timestamp time.Time
+	timestamp  time.Time
 	sampleRate int
-	channels  int
+	channels   int
 }
 
 // NewAudioSegment creates a new audio segment
 func NewAudioSegment(sampleRate, channels int) *AudioSegment {
 	return &AudioSegment{
 		data:       make([]int16, 0),
-		timestamp: time.Now(),
+		timestamp:  time.Now(),
 		sampleRate: sampleRate,
-		channels:  channels,
+		channels:   channels,
 	}
 }
 
@@ -84,8 +84,8 @@ func (s *AudioSegment) ToWAV() ([]byte, error) {
 	binary.Write(buf, binary.LittleEndian, uint16(s.channels))
 	binary.Write(buf, binary.LittleEndian, uint32(s.sampleRate))
 	binary.Write(buf, binary.LittleEndian, uint32(s.sampleRate*s.channels*2)) // Byte rate
-	binary.Write(buf, binary.LittleEndian, uint16(s.channels*2)) // Block align
-	binary.Write(buf, binary.LittleEndian, uint16(16)) // Bits per sample
+	binary.Write(buf, binary.LittleEndian, uint16(s.channels*2))              // Block align
+	binary.Write(buf, binary.LittleEndian, uint16(16))                        // Bits per sample
 
 	// data chunk
 	buf.WriteString("data")
@@ -101,22 +101,22 @@ func (s *AudioSegment) ToWAV() ([]byte, error) {
 
 // AudioBuffer manages audio data buffering
 type AudioBuffer struct {
-	sampleRate       int
+	sampleRate     int
 	channels       int
-	segmentSeconds int
+	segmentSeconds time.Duration
 	data           []int16
 	maxSamples     int
 }
 
 // NewAudioBuffer creates a new audio buffer
-func NewAudioBuffer(sampleRate, channels, segmentSeconds int) *AudioBuffer {
-	maxSamples := sampleRate * channels * segmentSeconds
+func NewAudioBuffer(sampleRate, channels int, segmentSeconds time.Duration) *AudioBuffer {
+	maxSamples := sampleRate * channels * int(segmentSeconds.Seconds())
 	return &AudioBuffer{
-		sampleRate:       sampleRate,
-		channels:         channels,
-		segmentSeconds:   segmentSeconds,
-		data:             make([]int16, 0, maxSamples),
-		maxSamples:       maxSamples,
+		sampleRate:     sampleRate,
+		channels:       channels,
+		segmentSeconds: segmentSeconds,
+		data:           make([]int16, 0, maxSamples),
+		maxSamples:     maxSamples,
 	}
 }
 
