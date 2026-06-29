@@ -1,0 +1,31 @@
+# Audio Recorder Configuration
+
+# Audio recording settings
+audio:
+  sample_rate: 16000
+  channels: 1
+  segment_duration: 60  # seconds (10-600)
+
+# Transcription server settings
+server:
+  url: https://api.hoomanai.ir
+  timeout: 30  # seconds
+
+# Upload worker settings
+workers:
+  count: 2
+  queue_size: 10
+
+# Retry settings
+retry:
+  max_retries: 5
+  initial_delay: 1  # seconds
+  max_delay: 60  # seconds
+
+# Shutdown settings
+shutdown:
+  timeout: 30  # seconds
+
+# Logging
+log:
+  level: info  # debug, info, warn, error
