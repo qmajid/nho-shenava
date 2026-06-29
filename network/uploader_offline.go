@@ -51,7 +51,7 @@ func (o *OfflineUploader) UploadFile(filePath string) (string, error) {
 	}
 	writer.Close()
 
-	endpoint := fmt.Sprintf("%s/api/login", o.APIURL)
+	endpoint := fmt.Sprintf("%s/api/transcribe", o.APIURL)
 	req, err := http.NewRequest(http.MethodPost, endpoint, &body)
 	if err != nil {
 		return "", fmt.Errorf("failed to create HTTP request: %w", err)
