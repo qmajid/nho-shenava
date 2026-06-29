@@ -21,9 +21,10 @@ type Config struct {
 
 // AudioConfig holds audio settings
 type AudioConfig struct {
-	SampleRate      int `yaml:"sample_rate"`
-	Channels        int `yaml:"channels"`
-	SegmentDuration int `yaml:"segment_duration"`
+	SampleRate      int    `yaml:"sample_rate"`
+	Channels        int    `yaml:"channels"`
+	SegmentDuration int    `yaml:"segment_duration"`
+	TestFile        string `yaml:"test_file"`
 }
 
 // ServerConfig holds server settings

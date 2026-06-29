@@ -14,7 +14,7 @@ type TerminalLogger struct {
 }
 
 // NewTerminalLogger creates a new terminal logger
-func NewTerminalLogger(level Level) *TerminalLogger {
+func NewTerminalLogger(level Level) Logger {
 	return &TerminalLogger{
 		level: level,
 	}

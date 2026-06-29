@@ -15,7 +15,7 @@ type FileLogger struct {
 }
 
 // NewFileLogger creates a new file logger
-func NewFileLogger(level Level, filename string) (*FileLogger, error) {
+func NewFileLogger(level Level, filename string) (Logger, error) {
 	f, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return nil, err

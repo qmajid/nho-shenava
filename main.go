@@ -32,6 +32,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	if len(cfg.Audio.TestFile) > 0 {
+		testOffline(logger, *cfg)
+	}
+
 	// Initialize signal handler with logger
 	sigHandler := utils.NewSignalHandler(logger)
 	if err := sigHandler.Init(); err != nil {
@@ -160,4 +164,24 @@ func main() {
 	}
 
 	logger.Info("Audio Recorder stopped")
+}
+
+func testOffline(logger utils.Logger, cfg config.Config) {
+	loginResp, err := network.Login(cfg)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Uploader failed to login: %v", err))
+		os.Exit(1)
+	}
+	ol := network.OfflineUploader{
+		APIToken: loginResp.AccessToken,
+		APIURL:   cfg.Server.URL,
+		Timeout:  cfg.Server.TranscribeTimeout,
+	}
+	result, err := ol.UploadFile("test/test.mp3")
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	fmt.Printf("transcribe result is: \n%v\n", result)
+	os.Exit(0)
 }

@@ -5,6 +5,7 @@ audio:
   sample_rate: 16000
   channels: 1
   segment_duration: 60  # seconds (10-600)
+  test_file: test/test.mp3
 
 # Transcription server settings
 server:
