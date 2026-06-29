@@ -27,8 +27,10 @@ type AudioConfig struct {
 
 // ServerConfig holds server settings
 type ServerConfig struct {
-	URL     string `yaml:"url"`
-	Timeout int    `yaml:"timeout"`
+	URL      string `yaml:"url"`
+	Timeout  int    `yaml:"timeout"`
+	Usernaem string `yaml:"username"`
+	Password string `yaml:"password"`
 }
 
 // WorkersConfig holds worker settings

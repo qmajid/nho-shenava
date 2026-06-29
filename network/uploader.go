@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"audio-recorder/audio"
+	"audio-recorder/config"
 	"audio-recorder/utils"
 )
 
@@ -20,6 +21,7 @@ type UploadCallback func(success bool, response string)
 
 // Uploader handles uploading audio segments to transcription service
 type Uploader struct {
+	cfg          config.Config
 	serverURL    string
 	timeout      int
 	workerCount  int
@@ -27,35 +29,30 @@ type Uploader struct {
 	initialDelay int
 	maxDelay     int
 
-	jobs       chan *uploadJob
+	jobs      chan *uploadJob
 	workers   []*worker
 	waitGroup sync.WaitGroup
-	running  bool
-	mu       sync.RWMutex
-	logger   utils.Logger
+	running   bool
+	mu        sync.RWMutex
+	logger    utils.Logger
 }
 
 type uploadJob struct {
-	segment   *audio.AudioSegment
-	callback  UploadCallback
+	segment  *audio.AudioSegment
+	callback UploadCallback
 }
 
 type worker struct {
-	id        int
+	id       int
 	uploader *Uploader
 }
 
 // NewUploader creates a new uploader
-func NewUploader(serverURL string, timeout, workerCount, maxRetries, initialDelay, maxDelay int, logger utils.Logger) *Uploader {
+func NewUploader(cfg config.Config, logger utils.Logger) *Uploader {
 	return &Uploader{
-		serverURL:    serverURL,
-		timeout:     timeout,
-		workerCount:  workerCount,
-		maxRetries:   maxRetries,
-		initialDelay: initialDelay,
-		maxDelay:     maxDelay,
-		jobs:         make(chan *uploadJob, workerCount*10),
-		logger:       logger,
+		cfg:    cfg,
+		jobs:   make(chan *uploadJob, cfg.Workers.Count*10),
+		logger: logger,
 	}
 }
 
@@ -65,13 +62,22 @@ func (u *Uploader) Start() error {
 		return nil
 	}
 
-	u.running = true
-	u.workers = make([]*worker, u.workerCount)
+	// Authenticate with the server using the Login function.
+	loginResp, err := Login(u.cfg.Server.URL, u.cfg.Server.Usernaem, u.cfg.Server.Password)
+	if err != nil {
+		u.logger.Error(fmt.Sprintf("Uploader failed to login: %v", err))
+		return err
+	}
+	u.logger.Info(fmt.Sprintf("Uploader logged in successfully. Token type: %+v", loginResp))
+	// Store the access token somewhere if needed (not shown here)
 
-	for i := 0; i < u.workerCount; i++ {
+	u.running = true
+	u.workers = make([]*worker, u.cfg.Workers.Count)
+
+	for i := 0; i < u.cfg.Workers.Count; i++ {
 		w := &worker{
-			id:        i,
-			uploader:  u,
+			id:       i,
+			uploader: u,
 		}
 		u.workers[i] = w
 
@@ -82,7 +88,7 @@ func (u *Uploader) Start() error {
 		}()
 	}
 
-	u.logger.Info(fmt.Sprintf("Started %d upload workers", u.workerCount))
+	u.logger.Info(fmt.Sprintf("Started %d upload workers", u.cfg.Workers.Count))
 	return nil
 }
 
@@ -141,11 +147,11 @@ func (w *worker) processJob(job *uploadJob) {
 	var response string
 	success := false
 
-	for attempt := 0; attempt <= w.uploader.maxRetries; attempt++ {
+	for attempt := 0; attempt <= w.uploader.cfg.Retry.MaxRetries; attempt++ {
 		if attempt > 0 {
 			// Calculate backoff delay
 			delay := w.calculateBackoff(attempt)
-			w.uploader.logger.Info(fmt.Sprintf("Retry %d/%d after %.1fs", attempt, w.uploader.maxRetries, delay.Seconds()))
+			w.uploader.logger.Info(fmt.Sprintf("Retry %d/%d after %.1fs", attempt, w.uploader.cfg.Retry.MaxRetries, delay.Seconds()))
 			time.Sleep(delay)
 		}
 
@@ -195,10 +201,10 @@ func (w *worker) upload(segment *audio.AudioSegment) (bool, string) {
 	writer.Close()
 
 	// Create request
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(w.uploader.timeout)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(w.uploader.cfg.Server.Timeout)*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, "POST", w.uploader.serverURL, body)
+	req, err := http.NewRequestWithContext(ctx, "POST", w.uploader.cfg.Server.URL, body)
 	if err != nil {
 		return false, fmt.Sprintf("failed to create request: %v", err)
 	}
@@ -232,9 +238,9 @@ func (w *worker) upload(segment *audio.AudioSegment) (bool, string) {
 }
 
 func (w *worker) calculateBackoff(attempt int) time.Duration {
-	delay := float64(w.uploader.initialDelay) * math.Pow(2, float64(attempt-1))
-	if delay > float64(w.uploader.maxDelay) {
-		delay = float64(w.uploader.maxDelay)
+	delay := float64(w.uploader.cfg.Retry.InitialDelay) * math.Pow(2, float64(attempt-1))
+	if delay > float64(w.uploader.cfg.Retry.MaxDelay) {
+		delay = float64(w.uploader.cfg.Retry.MaxDelay)
 	}
 	return time.Duration(delay * float64(time.Second))
 }

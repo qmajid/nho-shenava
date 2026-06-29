@@ -10,6 +10,8 @@ audio:
 server:
   url: https://api.hoomanai.ir
   timeout: 30  # seconds
+  username: user404
+  password: User@404
 
 # Upload worker settings
 workers:

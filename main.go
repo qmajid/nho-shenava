@@ -47,15 +47,7 @@ func main() {
 	)
 
 	// Create uploader with logger
-	uploader := network.NewUploader(
-		cfg.Server.URL,
-		cfg.Server.Timeout,
-		cfg.Workers.Count,
-		cfg.Retry.MaxRetries,
-		cfg.Retry.InitialDelay,
-		cfg.Retry.MaxDelay,
-		logger,
-	)
+	uploader := network.NewUploader(*cfg, logger)
 
 	// Start uploader
 	if err := uploader.Start(); err != nil {
