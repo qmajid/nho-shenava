@@ -2,7 +2,7 @@
 
 # Audio recording settings
 audio:
-  offline_test: true
+  offline_test: false
   test_file: test/test.wav
   sample_rate: 16000
   channels: 1

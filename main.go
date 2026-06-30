@@ -82,10 +82,11 @@ func main() {
 		staticTickerOnce := false
 		var uploadTicker *time.Ticker
 		if !staticTickerOnce {
-			uploadTicker = time.NewTicker(10 * time.Second)
+			uploadTicker = time.NewTicker(cfg.Audio.SegmentDuration)
 			staticTickerOnce = true
 			go func() {
 				for range uploadTicker.C {
+					fmt.Printf("tick...\n")
 					if !buffer.IsEmpty() {
 						seg := buffer.GetSegment()
 						if seg != nil {
