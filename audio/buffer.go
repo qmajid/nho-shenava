@@ -5,7 +5,12 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
+	"os"
 	"time"
+
+	"github.com/go-audio/audio"
+	"github.com/go-audio/wav"
 )
 
 // AudioSegment represents a segment of audio data
@@ -97,6 +102,49 @@ func (s *AudioSegment) ToWAV() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (s *AudioSegment) ToWAV2() ([]byte, error) {
+	if len(s.data) == 0 {
+		return nil, errors.New("no audio data")
+	}
+
+	audioBuf := &audio.IntBuffer{
+		Format: &audio.Format{
+			NumChannels: s.channels,
+			SampleRate:  s.sampleRate,
+		},
+		Data:           make([]int, len(s.data)),
+		SourceBitDepth: 16,
+	}
+	for i, v := range s.data {
+		audioBuf.Data[i] = int(v)
+	}
+
+	f, err := os.CreateTemp("", "*.wav")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(f.Name())
+	defer f.Close()
+
+	enc := wav.NewEncoder(f, s.sampleRate, 16, s.channels, 1) // PCM = 1
+
+	if err := enc.Write(audioBuf); err != nil {
+		enc.Close()
+		return nil, err
+	}
+
+	if err := enc.Close(); err != nil {
+		return nil, err
+	}
+
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+
+	return io.ReadAll(f)
 }
 
 // AudioBuffer manages audio data buffering
