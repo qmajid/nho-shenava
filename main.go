@@ -32,7 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if len(cfg.Audio.TestFile) > 0 {
+	if cfg.Audio.OfflineTest {
 		testOffline(logger, *cfg)
 	}
 
@@ -177,17 +177,19 @@ func main() {
 }
 
 func testOffline(logger utils.Logger, cfg config.Config) {
+	fmt.Printf("start offline mode for file: %v\n", cfg.Audio.TestFile)
 	loginResp, err := network.Login(cfg)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Uploader failed to login: %v", err))
 		os.Exit(1)
 	}
+	fmt.Printf("login successfully...\n")
 	ol := network.OfflineUploader{
 		APIToken: loginResp.AccessToken,
 		APIURL:   cfg.Server.URL,
 		Timeout:  cfg.Server.TranscribeTimeout,
 	}
-	result, err := ol.UploadFile("test/test.mp3")
+	result, err := ol.UploadFile(cfg.Audio.TestFile)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)

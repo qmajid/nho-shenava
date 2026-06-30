@@ -24,6 +24,7 @@ type AudioConfig struct {
 	SampleRate      int           `yaml:"sample_rate"`
 	Channels        int           `yaml:"channels"`
 	SegmentDuration time.Duration `yaml:"segment_duration"`
+	OfflineTest     bool          `yaml:"offline_test"`
 	TestFile        string        `yaml:"test_file"`
 }
 

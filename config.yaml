@@ -2,10 +2,11 @@
 
 # Audio recording settings
 audio:
+  offline_test: true
+  test_file: test/test.wav
   sample_rate: 16000
   channels: 1
   segment_duration: 5s  # seconds (10-600)
-  # test_file: test/test.mp3
 
 # Transcription server settings
 server:
