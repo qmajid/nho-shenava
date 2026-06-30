@@ -36,6 +36,10 @@ func (v *Uploader) Upload(segment *audio.AudioSegment) (string, error) {
 		return "", fmt.Errorf("segment is nil")
 	}
 
+	if len(segment.Data()) == 0 {
+		return "", fmt.Errorf("segment data is empty")
+	}
+
 	// Convert to WAV
 	wavData, err := segment.ToWAV()
 	if err != nil {
